@@ -1,0 +1,25 @@
+<%= form_for(@generator) do |f| %>
+  <% if @generator.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@generator.errors.count, "error") %> prohibited this generator from being saved:</h2>
+
+      <ul>
+      <% @generator.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :dev_id %><br />
+    <%= f.text_field :dev_id %>
+  </div>
+  <div class="field">
+    <%= f.label :dev_name %><br />
+    <%= f.text_field :dev_name %>
+  </div>
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>

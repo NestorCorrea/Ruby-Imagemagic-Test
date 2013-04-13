@@ -1,6 +1,11 @@
 RubyImagemagicTest::Application.routes.draw do
+  resources :generators
+
+
   # The priority is based upon order of creation:
   # first created -> highest priority.
+
+  resource :generators
 
   # Sample of regular route:
   #   match 'products/:id' => 'catalog#view'

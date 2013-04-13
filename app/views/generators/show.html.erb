@@ -1,0 +1,16 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Dev:</b>
+  <%= @generator.dev_id %>
+</p>
+
+<p>
+  <b>Dev name:</b>
+  <%= @generator.dev_name %>
+</p>
+
+
+<%= link_to 'Edit', edit_generator_path(@generator) %> |
+<%= link_to 'Back', generators_path %>
+
