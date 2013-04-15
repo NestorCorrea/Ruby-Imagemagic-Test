@@ -1,23 +1,9 @@
 RubyImagemagicTest::Application.routes.draw do
-  get "imageprocess/processimagetest"
-
-  get "imageprocess/testimage"
-
-  get "imageprocess/imagetest1"
-
-  get "imageprocess/process_image_1"
-
-  get "image_proess/process_image_1"
 
   resources :generators
 
-
   # The priority is based upon order of creation:
   # first created -> highest priority.
-
-  resource :generators
-
-  match 'imageprocess' => 'imageprocess#processimagetest'
 
   # Sample of regular route:
   #   match 'products/:id' => 'catalog#view'

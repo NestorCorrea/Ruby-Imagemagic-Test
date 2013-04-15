@@ -1,6 +1,9 @@
 class GeneratorsController < ApplicationController
   # GET /generators
   # GET /generators.json
+
+  include GeneratorsHelper
+
   def index
     @generators = Generator.all
 
@@ -19,6 +22,8 @@ class GeneratorsController < ApplicationController
       format.html # show.html.erb
       format.json { render json: @generator }
     end
+
+    init_wraps
   end
 
   # GET /generators/new
@@ -80,10 +85,4 @@ class GeneratorsController < ApplicationController
       format.json { head :no_content }
     end
   end
-
-
-  def sampleImage
-  end
-
-
 end

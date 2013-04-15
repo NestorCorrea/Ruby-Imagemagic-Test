@@ -1,23 +1,16 @@
 require 'RMagick'
 include Magick
 
+
+
+
 module ImageprocessHelper
-  def create_ipad
-    ipad_front = Image.read('/Users/Nestor/Projects/Repositories/GelaSkins/spree_gelaskins/public/skinCreator/assets/layoutManagerAssets/layoutAssets/iPad2FrontOverlay.png').first
-    ipad_back = Image.read('/Users/Nestor/Projects/Repositories/GelaSkins/spree_gelaskins/public/skinCreator/assets/layoutManagerAssets/layoutAssets/iPad2BackOverlay.png').first
-    spacer_white =  Image.new(50, 5000, Magick::GradientFill.new(0, 0, 0, 0, "#FFFFFF", "#FFFFFF"))
-    source_image = Image.read('/Users/Nestor/Desktop/Generator/sample_images/climb.jpg').first
 
-    skin_front =  source_image.composite(ipad_front, 0, 0, Magick::OverCompositeOp)
-    skin_back =   source_image.composite(ipad_back, 0, 0, Magick::OverCompositeOp)
 
-    canvas = Image::new(ipad_front.columns + ipad_back.columns + spacer_white.columns, ipad_front.rows)
-    canvas = canvas.composite(skin_front,     0, 0, Magick::OverCompositeOp)
-    canvas = canvas.composite(spacer_white,   ipad_front.columns, 0, Magick::OverCompositeOp)
-    canvas = canvas.composite(skin_back,      ipad_front.columns-100 + spacer_white.columns, 0, Magick::OverCompositeOp)
+  def create_skins
 
-    canvas.write('/Users/Nestor/Desktop/ipad_skin.jpg')
   end
+
 
 
 
@@ -32,18 +25,18 @@ module ImageprocessHelper
 
       # Create the wrap
 
-      ipad_front = Image.read('/Users/Nestor/Projects/Repositories/GelaSkins/spree_gelaskins/public/skinCreator/assets/layoutManagerAssets/layoutAssets/iPad2FrontOverlay.png').first
-      ipad_back = Image.read('/Users/Nestor/Projects/Repositories/GelaSkins/spree_gelaskins/public/skinCreator/assets/layoutManagerAssets/layoutAssets/iPad2BackOverlay.png').first
+      ipad_front =    Image.read('/Users/Nestor/Projects/Repositories/GelaSkins/spree_gelaskins/public/skinCreator/assets/layoutManagerAssets/layoutAssets/iPad2FrontOverlay.png').first
+      ipad_back =     Image.read('/Users/Nestor/Projects/Repositories/GelaSkins/spree_gelaskins/public/skinCreator/assets/layoutManagerAssets/layoutAssets/iPad2BackOverlay.png').first
       spacer_white =  Image.new(50, 5000, Magick::GradientFill.new(0, 0, 0, 0, "#FFFFFF", "#FFFFFF"))
-      source_image = Image.read(image_a[counter]).first
+      source_image =  Image.read(image_a[counter]).first
 
       skin_front =  source_image.composite(ipad_front, 0, 0, Magick::OverCompositeOp)
       skin_back =   source_image.composite(ipad_back, 0, 0, Magick::OverCompositeOp)
 
       canvas = Image::new(ipad_front.columns + ipad_back.columns + spacer_white.columns, ipad_front.rows)
-      canvas = canvas.composite(skin_front,     0, 0, Magick::OverCompositeOp)
-      canvas = canvas.composite(spacer_white,   ipad_front.columns, 0, Magick::OverCompositeOp)
-      canvas = canvas.composite(skin_back,      ipad_front.columns + spacer_white.columns, 0, Magick::OverCompositeOp)
+      canvas = canvas.composite(skin_front,     0,                                          0, Magick::OverCompositeOp)
+      canvas = canvas.composite(spacer_white,   ipad_front.columns,                         0, Magick::OverCompositeOp)
+      canvas = canvas.composite(skin_back,      ipad_front.columns + spacer_white.columns,  0, Magick::OverCompositeOp)
 
       canvas.write('/Users/Nestor/Desktop/WrapExport/' + counter.to_s + '.jpg')
 
