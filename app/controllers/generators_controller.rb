@@ -80,4 +80,10 @@ class GeneratorsController < ApplicationController
       format.json { head :no_content }
     end
   end
+
+
+  def sampleImage
+  end
+
+
 end
