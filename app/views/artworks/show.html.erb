@@ -1,0 +1,27 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Artwork name:</b>
+  <%= @artwork.artwork_name %>
+</p>
+
+<p>
+  <b>Artwork:</b>
+  <%= @artwork.artwork %>
+</p>
+
+<p>
+  <b>Artwork file name:</b>
+  <%= @artwork.artwork_file_name %>
+</p>
+
+
+<%= link_to 'Edit', edit_artwork_path(@artwork) %> |
+<%= link_to 'Back', artworks_path %>
+
+<% @wrap_array.each do |device| %>
+    <tr>
+      <img src="/assets/<%= device %>" height="200"/>
+    </tr>
+<% end %>
+

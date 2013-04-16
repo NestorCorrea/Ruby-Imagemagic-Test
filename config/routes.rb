@@ -1,4 +1,5 @@
 RubyImagemagicTest::Application.routes.draw do
+  resources :artworks
   resources :devices
 
 

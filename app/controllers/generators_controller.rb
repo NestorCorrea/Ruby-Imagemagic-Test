@@ -4,26 +4,33 @@ class GeneratorsController < ApplicationController
 
   include GeneratorsHelper
 
+  @this_should_be_text = "WORKING"
+  @this_is_array = ["A", "B", "C", "D"]
+
   def index
     @generators = Generator.all
 
+    @this_should_be_text_in_method = "Text in method"
+    @this_is_array_in_method = ["A", "B", "C", "D"]
     respond_to do |format|
       format.html # index.html.erb
       format.json { render json: @generators }
     end
   end
 
+
   # GET /generators/1
   # GET /generators/1.json
   def show
+    @this_should_be_text_in_method = "Text in method"
+    @this_is_array_in_method = ["A", "B", "C", "D"]
     @generator = Generator.find(params[:id])
-
     respond_to do |format|
       format.html # show.html.erb
       format.json { render json: @generator }
     end
 
-    init_wraps
+
   end
 
   # GET /generators/new

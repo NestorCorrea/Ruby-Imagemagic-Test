@@ -5,5 +5,6 @@
 
 en:
   hello: "Hello world"
-  source_image_pat: "/Users/NestorCorrea/Projects/GelaSkins/Repositories/Git/"
-  expoxt_path: "/Users/NestorCorrea/Projects/GelaSkins/Repositories/Git/"
+
+  dropbox_path: "/Users/Nestor/Dropbox/"
+  spree_gelaskins_path: "/Users/Nestor/Projects/Repositories/GelaSkins/spree_gelaskins/"

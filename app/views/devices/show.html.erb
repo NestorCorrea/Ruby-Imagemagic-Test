@@ -1,0 +1,52 @@
+<p id="notice"><%= notice %></p>
+
+<p> <b>Dev:</b>         <%= @device.dev_id %></p>
+<p> <b>Dev name:</b>    <%= @device.dev_name %></p>
+<p> <b>Front image:</b> <%= @device.front_image %></p>
+
+<p>
+  <b>Text :</b>
+  <%= @this_should_be_text %>
+</p>
+
+<p>
+  <b>Text-method:</b>
+  <%= @this_should_be_text_in_method %>
+</p>
+
+<p>
+  <b>Array :</b>
+  <%= @this_is_array %>
+</p>
+
+<p>
+  <b>Array-method:</b>
+  <%= @this_is_array_in_method %>
+</p>
+
+<p>
+  <b>Wrap-Array-method:</b>
+  <%= @wrap_array %>
+</p>
+
+<p>
+  <b>size:</b>
+  <%= @size_display %>
+</p>
+
+<p>
+  <%= link_to 'Edit', edit_device_path(@device) %> |
+  <%= link_to 'Back', devices_path %>
+</p>
+
+<p>wrap_images array = <%= @wrap_images %> </p>
+<p>test array = <%= @test_a.to_s %> </p>
+<p>@@simage_a array = <%= @simage_a %> </p>
+
+
+<% @wrap_array.each do |device| %>
+    <tr>
+      <img src="/assets/<%= device %>" height="200"/>
+    </tr>
+<% end %>
+

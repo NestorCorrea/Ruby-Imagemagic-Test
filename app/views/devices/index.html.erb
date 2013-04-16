@@ -1,0 +1,29 @@
+<h1>Listing devices</h1>
+
+<table>
+  <tr>
+    <th>Dev</th>
+    <th>Dev name</th>
+    <th>Front image</th>
+    <th>Back image</th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+<% @devices.each do |device| %>
+  <tr>
+    <td><%= device.dev_id %></td>
+    <td><%= device.dev_name %></td>
+    <td><%= device.front_image %></td>
+    <td><%= device.back_image %></td>
+    <td><%= link_to 'Show', device %></td>
+    <td><%= link_to 'Edit', edit_device_path(device) %></td>
+    <td><%= link_to 'Destroy', device, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New Device', new_device_path %>

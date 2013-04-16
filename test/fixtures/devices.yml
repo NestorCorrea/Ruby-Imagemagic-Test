@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  dev_id: MyString
+  dev_name: MyString
+  front_image: MyString
+  back_image: MyString
+
+two:
+  dev_id: MyString
+  dev_name: MyString
+  front_image: MyString
+  back_image: MyString

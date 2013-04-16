@@ -11,13 +11,32 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130413034634) do
+ActiveRecord::Schema.define(:version => 20130416193225) do
+
+  create_table "artworks", :force => true do |t|
+    t.string   "artwork_name"
+    t.string   "artwork"
+    t.string   "artwork_file_name"
+    t.datetime "created_at",        :null => false
+    t.datetime "updated_at",        :null => false
+  end
+
+  create_table "devices", :force => true do |t|
+    t.string   "dev_id"
+    t.string   "dev_name"
+    t.string   "front_image"
+    t.string   "back_image"
+    t.datetime "created_at",  :null => false
+    t.datetime "updated_at",  :null => false
+  end
 
   create_table "generators", :force => true do |t|
     t.string   "dev_id"
     t.string   "dev_name"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.string   "front_image"
+    t.string   "back_image"
+    t.datetime "created_at",  :null => false
+    t.datetime "updated_at",  :null => false
   end
 
 end

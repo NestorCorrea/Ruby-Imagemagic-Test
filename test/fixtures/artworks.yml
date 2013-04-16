@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  artwork_name: MyString
+  artwork: MyString
+  artwork_file_name: MyString
+
+two:
+  artwork_name: MyString
+  artwork: MyString
+  artwork_file_name: MyString
