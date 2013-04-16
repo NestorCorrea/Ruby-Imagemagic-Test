@@ -9,16 +9,39 @@
     <th></th>
   </tr>
 
-<% @generators.each do |generator| %>
+
+  <p>
+    <b>Text :</b>
+    <%= @this_should_be_text %>
+  </p>
+
+  <p>
+    <b>Text-method:</b>
+    <%= @this_should_be_text_in_method %>
+  </p>
+
+  <p>
+    <b>Array :</b>
+    <%= @this_is_array %>
+  </p>
+
+  <p>
+    <b>Array-method:</b>
+    <%= @this_is_array_in_method %>
+  </p>
+
+
+  <% @generators.each do |generator| %>
   <tr>
     <td><%= generator.dev_id %></td>
-    <td><%= generator.dev_name %></td>
     <td><%= link_to 'Show', generator %></td>
     <td><%= link_to 'Edit', edit_generator_path(generator) %></td>
     <td><%= link_to 'Destroy', generator, method: :delete, data: { confirm: 'Are you sure?' } %></td>
   </tr>
 <% end %>
 </table>
+
+
 
 <br />
 <button  />

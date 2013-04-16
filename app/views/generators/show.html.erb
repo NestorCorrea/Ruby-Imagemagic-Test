@@ -1,7 +1,7 @@
 <p id="notice"><%= notice %></p>
 
 <p>
-  <b>Dev:</b>
+  <b>Dev ID:</b>
   <%= @generator.dev_id %>
 </p>
 
@@ -9,6 +9,28 @@
   <b>Dev name:</b>
   <%= @generator.dev_name %>
 </p>
+
+<p>
+  <b>Text :</b>
+  <%= @this_should_be_text %>
+</p>
+
+<p>
+  <b>Text-method:</b>
+  <%= @this_should_be_text_in_method %>
+</p>
+
+<p>
+  <b>Array :</b>
+  <%= @this_is_array %>
+</p>
+
+<p>
+  <b>Array-method:</b>
+  <%= @this_is_array_in_method %>
+</p>
+
+
 
 
 <%= link_to 'Edit', edit_generator_path(@generator) %> |
