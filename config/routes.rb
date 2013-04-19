@@ -1,7 +1,9 @@
 RubyImagemagicTest::Application.routes.draw do
   resources :artworks
   resources :devices
+  root to:'static_pages#home'
 
+  match '/', to:'static_pages#home'
 
   # The priority is based upon order of creation:
   # first created -> highest priority.

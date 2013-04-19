@@ -1,29 +1,24 @@
 <h1>Listing devices</h1>
 
+<%= link_to 'Home', root_path %> |
+<%= link_to 'Add New Device', new_device_path %>
+
 <table>
   <tr>
-    <th>Dev</th>
+    <th>Image</th>
     <th>Dev name</th>
-    <th>Front image</th>
-    <th>Back image</th>
-    <th></th>
-    <th></th>
-    <th></th>
+    <th>Options</th>
   </tr>
 
-<% @devices.each do |device| %>
-  <tr>
-    <td><%= device.dev_id %></td>
-    <td><%= device.dev_name %></td>
-    <td><%= device.front_image %></td>
-    <td><%= device.back_image %></td>
-    <td><%= link_to 'Show', device %></td>
-    <td><%= link_to 'Edit', edit_device_path(device) %></td>
-    <td><%= link_to 'Destroy', device, method: :delete, data: { confirm: 'Are you sure?' } %></td>
-  </tr>
-<% end %>
+  <!--http://www.gelaskins.com/images/artworkImages/fixed-182x182/1179.jpg-->
+  <% @devices.each do |device| %>
+      <tr>
+        <td><img src="http://www.gelaskins.com/images/devices/hfixed-100/<%= device.dev_id %>.png" height="50" /></td>
+        <td><b><%= device.dev_name %></b></td>
+        <td><%= link_to 'Process Device', device %> | </td>
+        <td><%= link_to 'Edit', edit_device_path(device) %> | </td>
+        <td><%= link_to 'Destroy', device, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+  <% end %>
 </table>
 
-<br />
-
-<%= link_to 'New Device', new_device_path %>

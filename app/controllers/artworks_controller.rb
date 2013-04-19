@@ -1,6 +1,8 @@
 class ArtworksController < ApplicationController
   # GET /artworks
   # GET /artworks.json
+  include WrapGeneratorHelper
+
   def index
     @artworks = Artwork.all
 
@@ -17,8 +19,8 @@ class ArtworksController < ApplicationController
     @devices = Device.all
     @wrap_array = []
 
-    @devices.each do |image|
-      #@wrap_array = generate_wrap
+    @devices.each do |current_device|
+      @wrap_array.push(generate_wrap(current_device, @artwork))
     end
 
     respond_to do |format|
