@@ -1,5 +1,6 @@
 module WrapGeneratorHelper
   def generate_wrap(device, artwork)
+
     dropbox_path = "/Users/Nestor/Dropbox/"
     spree_gelaskins_path = "/Users/Nestor/Projects/Repositories/GelaSkins/spree_gelaskins/"
 
@@ -20,5 +21,25 @@ module WrapGeneratorHelper
 
     # The response back to the controller, this will return the path of the iamge
     "#{device.dev_id}-#{artwork.artwork_file_name}"
+  end
+
+
+  require 'rexml/document'
+
+  def parse_xml(dev_id)
+    spree_gelaskins_path = "/Users/Nestor/Projects/Repositories/GelaSkins/spree_gelaskins/"
+    logger.debug "THis is working for device id #{dev_id}"
+
+    file = File.new( "#{spree_gelaskins_path}public/skinCreator/config/devices/#{dev_id}.xml")
+    doc = REXML::Document.new file
+    file.close
+
+    # Stor the root of the xml
+    root = doc.root
+
+    elementsA = root.elements['sections']
+    elementsA.each do |current_section|
+      logger.debug("+++++++++++ #{current_section}")
+    end
   end
 end

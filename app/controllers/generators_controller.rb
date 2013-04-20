@@ -1,10 +1,9 @@
 class GeneratorsController < ApplicationController
   # GET /generators
   # GET /generators.json
-
+  require 'active_support/xml_mini/libxml'
   include GeneratorsHelper
 
-  @this_should_be_text = "WORKING"
   @this_is_array = ["A", "B", "C", "D"]
 
   def index
