@@ -17,8 +17,8 @@ class DevicesController < ApplicationController
   def show
     @device = Device.find(params[:id])
     @wrap_array = []
-    @artworks = Artwork.all
     @artworks = [Artwork.last  ]
+    @artworks = Artwork.all
     #@debug = parse_xml(@device.dev_id)
    # @debug = generate_wrap(@device, Artwork.first)
 
