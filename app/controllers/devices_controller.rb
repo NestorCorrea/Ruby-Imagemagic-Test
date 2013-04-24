@@ -16,10 +16,11 @@ class DevicesController < ApplicationController
   # GET /devices/1.json
   def show
     @device = Device.find(params[:id])
-    #@artworks = Artwork.all
-    @artworks = [Artwork.last  ]
     @wrap_array = []
-    @debug = parse_xml(@device.dev_id)
+    @artworks = Artwork.all
+    @artworks = [Artwork.last  ]
+    #@debug = parse_xml(@device.dev_id)
+   # @debug = generate_wrap(@device, Artwork.first)
 
     @artworks.each do |image|
       @wrap_array.push(generate_wrap(@device, image))
