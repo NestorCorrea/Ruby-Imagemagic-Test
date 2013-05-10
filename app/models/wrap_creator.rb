@@ -1,49 +1,43 @@
-module WrapGeneratorHelper
-  require 'rexml/document'
-  # ======================
-  # Variables
-  # ======================
-  # ---- Device and artwork ----
+class WrapCreator < ActiveRecord::Base
+  # attr_accessible :title, :body
+  require 'json'
+
+
+  # Store the device and artwork image
   @device
   @artwork
 
-  @sides
+  @device_template
 
-  # ---- Files ----
-  @source_image
+  @side_images
 
-  # ---- Imagemagic ----
-  @skin_canvas
-  @wrap_canvas
-  @wrap_overlays_canvas
-  @wrap_final
+  @skin_generator
+  @sections
 
   # ---- Skin Propeties ----
   @wrap_crop
   @wrap_overlays
 
+  # Initial Variables
+  @dropbox_path = "/Users/Nestor/Dropbox/"
+  @spree_gelaskins_path = "/Users/Nestor/Projects/Repositories/GelaSkins/spree_gelaskins/"
+  @layout_asset_path = "/Users/Nestor/Projects/Repositories/GelaSkins/spree_gelaskins/public/skinCreator/assets/layoutManagerAssets/layoutAssets/"
+  @preview_asset_path = "/Users/Nestor/Projects/Repositories/GelaSkins/spree_gelaskins/public/skinCreator/assets/layoutManagerAssets/previewAssets/"
+  @wrap_export_path = "/Users/Nestor/Projects/Repositories/Nestor/Ruby-Imagemagic-Test/app/assets/images/"
 
-
-  # ======================
-  # Main Wrap generator
-  # ======================
-  def generate_wrap(device, artwork)
-    logger.debug "THis is working for device id #{@device.dev_id}"
+  def self.create_wraps(current_device, current_image)
 
     # Store the device and artwork image
-    @device = device
-    @artwork = artwork
+    @device = current_device
+    @artwork = current_image
 
-
-    # Initial Variables
-    dropbox_path = "/Users/Nestor/Dropbox/"
-    spree_gelaskins_path = "/Users/Nestor/Projects/Repositories/GelaSkins/spree_gelaskins/"
+    @side_images = Hash.new
 
     # Load XML
-    @source_image =  Image.read("#{dropbox_path}wrap_generator/source_images/#{@artwork.artwork_file_name}").first
+    @source_image =  Image.read("#{@dropbox_path}wrap_generator/source_images/#{@artwork.artwork_file_name}").first
 
     # Load artwork file
-    file = File.new( "#{spree_gelaskins_path}public/skinCreator/config/devices/#{@device.dev_id}.xml")
+    file = File.new( "#{@spree_gelaskins_path}public/skinCreator/config/devices/#{@device.dev_id}.xml")
     doc = REXML::Document.new file
     file.close
 
@@ -53,7 +47,6 @@ module WrapGeneratorHelper
 
     skinGen = root_xml.elements['skinGenerator']
 
-
     # Loop through the generator sections to store them
     skinGen.elements.each do |skin_element|
       logger.debug "Trace = #{skin_element}"
@@ -62,8 +55,6 @@ module WrapGeneratorHelper
       elsif(skin_element.attributes['name'] == "skinwrap")
         @wrap_crop = skin_element.elements['crop'].elements['cut']
         @wrap_overlays = skin_element.elements['overlayAssets']
-        #  skin_elements.skin_wrap = skin_element
-        #  logger.debug  "skin wrap = #{skin_element}"
       end
     end
 
@@ -78,42 +69,34 @@ module WrapGeneratorHelper
 
     # Create the images on the skin
     sections.elements.each do |current_section|
-      generate_skin(current_section, 'skinart')
+      create_skin(current_section, 'skinart')
+
+      @skin_canvas.write("#{@dropbox_path}skin.jpg" )
     end
 
     # Create the wraps
     sections.elements.each do |current_section|
-      generate_skin(current_section, 'skinwrap')
+      create_skin(current_section, 'skinwrap')
     end
 
     # Place the wrap overlays and cut them out
     sections.elements.each do |current_section|
-      generate_skin(current_section, 'place_overlay')
+      create_skin(current_section, 'place_overlay')
     end
 
-    # Save the skins
-    #@skin_canvas.write("/Users/Nestor/Desktop/export/skin_art.jpg")
-    #@wrap_canvas.write("/Users/Nestor/Desktop/export/skin_wrap.jpg")
-    #@wrap_overlays_canvas.write("/Users/Nestor/Desktop/export/skin_wrap_overlay.png")
-    #
-    #wrap_overlay = @wrap_crop.elemets['wrapOverlay']
-    #wrap_final_overlay = @wrap_crop.elemets['wrapOverlay'].elements['fileName'].text
-    #overlay_image =  Image.read("#{wrap_final_overlay}").first
-    #@wrap_final = @wrap_final.composite(overlay_image, section_item.elements['x'].text.to_i, section_item.elements['y'].text.to_i, Magick::OverCompositeOp)
-
-    # Place overlays on top of the wrap
     @wrap_overlays.elements.each do |overlay_element|
       # Only add images
       if overlay_element.attributes['type'] == "image"
         overlay_filename = overlay_element.elements['fileName'].text
-        image_path = "/Users/Nestor/Projects/Repositories/GelaSkins/spree_gelaskins/public/skinCreator/assets/layoutManagerAssets/previewAssets/#{overlay_element.elements['fileName'].text}"
+        image_path = "#{@preview_asset_path}#{overlay_element.elements['fileName'].text}"
+        logger.debug "opening #{image_path}"
         overlay_image =  Image.read("#{image_path}").first
         overlay_image = overlay_image.resize(overlay_element.elements['width'].text.to_i, overlay_element.elements['height'].text.to_i)
 
         @wrap_final = @wrap_final.composite(overlay_image,
-                                              overlay_element.elements['x'].text.to_f,
-                                              overlay_element.elements['y'].text.to_f,
-                                              Magick::OverCompositeOp)
+                                            overlay_element.elements['x'].text.to_f,
+                                            overlay_element.elements['y'].text.to_f,
+                                            Magick::OverCompositeOp)
       end
     end
 
@@ -124,21 +107,26 @@ module WrapGeneratorHelper
         @wrap_crop.elements['height'].text.to_f
     )
 
-    @wrap_final.write("/Users/Nestor/Projects/Repositories/Nestor/Ruby-Imagemagic-Test/app/assets/images/#{@device.dev_id}-#{@artwork.artwork_file_name}")
+    logger.debug "Has = #{@side_images}"
+
+    @wrap_final.write("#{@wrap_export_path}#{@device.dev_id}-#{@artwork.artwork_file_name}")
     # The response back to the controller, this will return the path of the iamge
     "#{@device.dev_id}-#{@artwork.artwork_file_name}"
   end
 
 
 # First step, generate the skin and wrap
-  def generate_skin(current_section, generatorType)
+  def self.create_skin(current_section, generatorType)
     # Skin Side
     if current_section.attributes['type'] == 'side'
       current_section.elements['sectionSkinConfig'].elements.each do |section_item|
 
         # Add to the skin art
         if section_item.attributes['name'] == 'skinart' && generatorType == 'skinart'
-          add_section_to_skin(section_item)
+          @side_images[current_section.attributes['name']] = add_section_to_skin(section_item)
+
+
+          logger.debug "Current Section  =  #{current_section.to_s}"
 
           # Add to the wrap
         elsif section_item.attributes['name'] == 'skinwrap' && generatorType == 'skinwrap'
@@ -146,12 +134,33 @@ module WrapGeneratorHelper
           paste_to_wrap(section_item)
 
         elsif section_item.attributes['name'] == 'skinwrap' && generatorType == 'place_overlay'
+          logger.debug "pasting Overlay = #{current_section.to_s}"
+
           # Cut out the overlay and then place it to the final wrap
           cropped = @wrap_canvas.crop(
               section_item.elements['x'].text.to_i,
               section_item.elements['y'].text.to_i,
               section_item.elements['width'].text.to_i,
               section_item.elements['height'].text.to_i)
+
+          # Add an overlay mask if needed
+          if current_section.elements['elements'].elements['overlayMask']
+            logger.debug '===== OVERLAY MASK - FOUND FOR WRAP'
+            overlay_mask =  Image.read("#{@layout_asset_path}#{current_section.elements['elements'].elements['overlayMask'].text}").first
+
+            mask_canvas = Image::new(
+                    section_item.elements['width'].text.to_i,
+                    section_item.elements['height'].text.to_i){ self.background_color = "black" }
+
+            mask_canvas = mask_canvas.composite(overlay_mask, 0, 0,Magick::OverCompositeOp)
+
+            cropped = cropped.composite!(mask_canvas, CenterGravity, CopyOpacityCompositeOp)
+            cropped.write("#{@dropbox_path}#{current_section.attributes['name']}.jpg" )
+
+          else
+
+            logger.debug '===== OVERLAY MASK - NOT    FOUND FOR WRAP'
+          end
 
           @wrap_final = @wrap_final.composite(
               cropped,
@@ -164,7 +173,7 @@ module WrapGeneratorHelper
   end
 
 
-  def paste_to_wrap (section_item)
+  def self.paste_to_wrap (section_item)
     logger.debug("+++++++++++ Paste to wraps")
 
     # Process all the cuts
@@ -188,7 +197,6 @@ module WrapGeneratorHelper
         paste_y = current_cut.elements['paste'].elements['y'].text.to_f
         paste_h = current_cut.elements['paste'].elements['height'].text.to_f
         paste_w = current_cut.elements['paste'].elements['width'].text.to_f
-
       end
 
       copy_image = copy_image.resize(paste_w, paste_h)
@@ -197,7 +205,7 @@ module WrapGeneratorHelper
   end
 
 
-  def add_section_to_skin(section_item)
+  def self.add_section_to_skin(section_item)
     logger.debug("+++++++++++ source_image W = #{@source_image.columns.to_s} x source_image H = #{@source_image.rows.to_s}")
 
     # Set the area parameters
@@ -205,6 +213,8 @@ module WrapGeneratorHelper
     side_y =       section_item.elements['y'].text.to_f
     side_height =  section_item.elements['height'].text.to_i
     side_width =   section_item.elements['width'].text.to_i
+    logger.debug("+++++++++++ side_height = #{side_height.to_s} x side_width = #{side_width.to_s}")
+
 
     # Adjust the size of the image ot fit the side
     multiplier = 1.0
@@ -256,6 +266,39 @@ module WrapGeneratorHelper
         side_x,
         side_y  ,
         Magick::OverCompositeOp)
+
+    place_art
   end
 
+
+
+=begin
+  def self.create_wraps(current_device, current_image)
+
+    # Store the device and artwork image
+    @device = current_device
+    @artwork = current_image
+
+    logger.debug "==============================================="
+    logger.debug "Begining device id #{@device.dev_id}"
+
+    # Load the device Templagte
+    file = File.new( "#{@spree_gelaskins_path}public/skinCreator/config/devices/#{@device.dev_id}.xml").read
+    @device_template = Hash.from_xml(file.to_s).to_json
+    @device_template = JSON.parse(@device_template)
+    @device_template = @device_template.to_hash
+
+    #@device_hash = JSON.parse(@device_template)
+    #@device_template = JSON.parse(@device_template)
+    #@sections = @device_template.sections
+
+    @sections = @device_template['device']['sections']['side']
+    @skin_generator = @device_template['device']
+
+    logger.debug "Begining sections = #{JSON.pretty_unparse @skin_generator}"
+
+    #logger.debug "Begining sections = #{@sections}"
+    #logger.debug "Begining sections = #{JSON.pretty_unparse @sections['side']}"
+  end
+=end
 end

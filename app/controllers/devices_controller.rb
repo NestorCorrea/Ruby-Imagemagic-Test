@@ -17,14 +17,16 @@ class DevicesController < ApplicationController
   def show
     @device = Device.find(params[:id])
     @wrap_array = []
-    @artworks = [Artwork.last  ]
-    @artworks = Artwork.all
-    #@debug = parse_xml(@device.dev_id)
-   # @debug = generate_wrap(@device, Artwork.first)
+    @artworks = [Artwork.first  ]
+    #@artworks = Artwork.all
 
+    @wrap_array = Device.create_device_wraps(@device, @artworks)
+
+=begin
     @artworks.each do |image|
       @wrap_array.push(generate_wrap(@device, image))
     end
+=end
 
 
     respond_to do |format|

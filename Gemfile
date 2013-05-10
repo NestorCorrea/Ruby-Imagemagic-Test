@@ -10,6 +10,8 @@ gem "rmagick", "2.13.2"
 gem 'multi_xml', '0.5.3'
 gem 'debugger', {group: [:test, :development]}.merge(ENV['RM_INFO'] ? {require: false} : {})
 
+gem 'webrick', '~> 1.3.1'
+
 #gem "nokogiri", "~> 1.5.9"
 
 # Gems used only for assets and not required
