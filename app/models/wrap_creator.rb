@@ -17,6 +17,7 @@ class WrapCreator < ActiveRecord::Base
   # ---- Skin Propeties ----
   @wrap_crop
   @wrap_overlays
+  @current_section
 
   # Initial Variables
   @dropbox_path = "/Users/Nestor/Dropbox/"
@@ -25,8 +26,12 @@ class WrapCreator < ActiveRecord::Base
   @preview_asset_path = "/Users/Nestor/Projects/Repositories/GelaSkins/spree_gelaskins/public/skinCreator/assets/layoutManagerAssets/previewAssets/"
   @wrap_export_path = "/Users/Nestor/Projects/Repositories/Nestor/Ruby-Imagemagic-Test/app/assets/images/"
 
+  @send_image_array
+
   def self.create_wraps(current_device, current_image)
 
+
+    @send_image_array = Array.new
     # Store the device and artwork image
     @device = current_device
     @artwork = current_image
@@ -35,6 +40,12 @@ class WrapCreator < ActiveRecord::Base
 
     # Load XML
     @source_image =  Image.read("#{@dropbox_path}wrap_generator/source_images/#{@artwork.artwork_file_name}").first
+
+
+
+
+    mask_test
+
 
     # Load artwork file
     file = File.new( "#{@spree_gelaskins_path}public/skinCreator/config/devices/#{@device.dev_id}.xml")
@@ -89,7 +100,7 @@ class WrapCreator < ActiveRecord::Base
       if overlay_element.attributes['type'] == "image"
         overlay_filename = overlay_element.elements['fileName'].text
         image_path = "#{@preview_asset_path}#{overlay_element.elements['fileName'].text}"
-        logger.debug "opening #{image_path}"
+        #logger.debug "opening #{image_path}"
         overlay_image =  Image.read("#{image_path}").first
         overlay_image = overlay_image.resize(overlay_element.elements['width'].text.to_i, overlay_element.elements['height'].text.to_i)
 
@@ -107,35 +118,36 @@ class WrapCreator < ActiveRecord::Base
         @wrap_crop.elements['height'].text.to_f
     )
 
-    logger.debug "Has = #{@side_images}"
+    save_iamge(@skin_canvas,"#{@device.dev_id}-SkinArt-#{@artwork.artwork_file_name}")
+    save_iamge(@wrap_final,"#{@device.dev_id}-#{@artwork.artwork_file_name}")
 
-    @wrap_final.write("#{@wrap_export_path}#{@device.dev_id}-#{@artwork.artwork_file_name}")
-    # The response back to the controller, this will return the path of the iamge
-    "#{@device.dev_id}-#{@artwork.artwork_file_name}"
+    @send_image_array
   end
 
 
 # First step, generate the skin and wrap
   def self.create_skin(current_section, generatorType)
+    @current_section = current_section
+    #logger.debug "opening #{image_path}"
+    #logger.debug  "#{current_section.to_s}"
     # Skin Side
-    if current_section.attributes['type'] == 'side'
-      current_section.elements['sectionSkinConfig'].elements.each do |section_item|
+    if @current_section.attributes['type'] == 'side'
+      @current_section.elements['sectionSkinConfig'].elements.each do |section_item|
 
         # Add to the skin art
         if section_item.attributes['name'] == 'skinart' && generatorType == 'skinart'
-          @side_images[current_section.attributes['name']] = add_section_to_skin(section_item)
-
-
-          logger.debug "Current Section  =  #{current_section.to_s}"
+          @side_images[@current_section.attributes['name']] = add_section_to_skin(section_item)
 
           # Add to the wrap
         elsif section_item.attributes['name'] == 'skinwrap' && generatorType == 'skinwrap'
-          # Paste the section of the skin art onto the wrap canvas
-          paste_to_wrap(section_item)
+          logger.debug @current_section.elements['elements'].elements['overlayMask']
+          if @current_section.elements['elements'].elements['overlayMask']
+            paste_to_wrap(section_item, @current_section.elements['elements'].elements['overlayMask'].text)
+          else
+            paste_to_wrap(section_item)
+          end
 
         elsif section_item.attributes['name'] == 'skinwrap' && generatorType == 'place_overlay'
-          logger.debug "pasting Overlay = #{current_section.to_s}"
-
           # Cut out the overlay and then place it to the final wrap
           cropped = @wrap_canvas.crop(
               section_item.elements['x'].text.to_i,
@@ -144,22 +156,23 @@ class WrapCreator < ActiveRecord::Base
               section_item.elements['height'].text.to_i)
 
           # Add an overlay mask if needed
-          if current_section.elements['elements'].elements['overlayMask']
-            logger.debug '===== OVERLAY MASK - FOUND FOR WRAP'
-            overlay_mask =  Image.read("#{@layout_asset_path}#{current_section.elements['elements'].elements['overlayMask'].text}").first
+          if @current_section.elements['elements'].elements['overlayMask']
 
-            mask_canvas = Image::new(
-                    section_item.elements['width'].text.to_i,
-                    section_item.elements['height'].text.to_i){ self.background_color = "black" }
 
-            mask_canvas = mask_canvas.composite(overlay_mask, 0, 0,Magick::OverCompositeOp)
-
-            cropped = cropped.composite!(mask_canvas, CenterGravity, CopyOpacityCompositeOp)
-            cropped.write("#{@dropbox_path}#{current_section.attributes['name']}.jpg" )
+            #overlay_mask =  Image.read("#{@layout_asset_path}#{current_section.elements['elements'].elements['overlayMask'].text}").first
+            #mask_canvas = Image::new(
+            #        section_item.elements['width'].text.to_i,
+            #        section_item.elements['height'].text.to_i){ self.background_color = "black" }
+            #
+            #mask_canvas = mask_canvas.composite(overlay_mask, 0, 0,Magick::OverCompositeOp)
+            #
+            #cropped = cropped.composite!(mask_canvas, CenterGravity, CopyOpacityCompositeOp)
 
           else
 
-            logger.debug '===== OVERLAY MASK - NOT    FOUND FOR WRAP'
+            cropped.write("#{@dropbox_path}#{@current_section.attributes['name']}.jpg" )
+
+            #logger.debug '===== OVERLAY MASK - NOT    FOUND FOR WRAP'
           end
 
           @wrap_final = @wrap_final.composite(
@@ -173,9 +186,10 @@ class WrapCreator < ActiveRecord::Base
   end
 
 
-  def self.paste_to_wrap (section_item)
-    logger.debug("+++++++++++ Paste to wraps")
-
+  def self.paste_to_wrap (section_item, overlay_mask_path = nil)
+    logger.debug("+++++++++++ Paste to wraps = #{overlay_mask_path}")
+    #logger.debug(section_item.to_s)
+    copy_image = Image::new(100,100)
     # Process all the cuts
     section_item.elements['cuts'].elements.each do |current_cut|
 
@@ -199,21 +213,60 @@ class WrapCreator < ActiveRecord::Base
         paste_w = current_cut.elements['paste'].elements['width'].text.to_f
       end
 
+      copy_image = copy_image.crop(
+              section_item.elements['x'].text.to_f,
+              section_item.elements['y'].text.to_f,
+              section_item.elements['width'].text.to_f,
+              section_item.elements['height'].text.to_f)
+
       copy_image = copy_image.resize(paste_w, paste_h)
+
+
       @wrap_canvas = @wrap_canvas.composite(copy_image,paste_x ,paste_y ,Magick::OverCompositeOp)
     end
+
+    if overlay_mask_path
+
+=begin
+
+      overlay_mask = overlay_mask.resize(
+              section_item.elements['width'].text.to_i,
+              section_item.elements['height'].text.to_i)
+
+      mask_canvas = Image::new(section_item.elements['width'].text.to_i, section_item.elements['height'].text.to_i){self.background_color = "black"}
+      mask_canvas = mask_canvas.composite(overlay_mask, 0, 0,Magick::OverCompositeOp)
+      mask_canvas.matte = false
+
+      copy_image.matte = true
+      copy_image.matte = true
+      copy_image = copy_image.composite!(mask_canvas, 0,0, Magick::MinusCompositeOp)
+
+
+
+
+      save_iamge(mask,"#{@device.dev_id}-#{@current_section.attributes['name']}-sidewrapMASK-#{@artwork.artwork_file_name}")
+      save_iamge(copy_image,"#{@device.dev_id}-#{@current_section.attributes['name']}-sidewrap-#{@artwork.artwork_file_name}")
+=end
+    else
+
+      #save_iamge(copy_image,"#{@device.dev_id}-#{@current_section.attributes['name']}-sidewrap-#{@artwork.artwork_file_name}")
+    end
+
+
+
+    logger.debug("+++++++++++ END Paste to wraps")
   end
 
 
   def self.add_section_to_skin(section_item)
-    logger.debug("+++++++++++ source_image W = #{@source_image.columns.to_s} x source_image H = #{@source_image.rows.to_s}")
+    #logger.debug("+++++++++++ Creating Skin Side " + section_item.to_s)
 
     # Set the area parameters
     side_x =       section_item.elements['x'].text.to_f
     side_y =       section_item.elements['y'].text.to_f
     side_height =  section_item.elements['height'].text.to_i
     side_width =   section_item.elements['width'].text.to_i
-    logger.debug("+++++++++++ side_height = #{side_height.to_s} x side_width = #{side_width.to_s}")
+    #logger.debug("+++++++++++ side_height = #{side_height.to_s} x side_width = #{side_width.to_s}")
 
 
     # Adjust the size of the image ot fit the side
@@ -270,7 +323,59 @@ class WrapCreator < ActiveRecord::Base
     place_art
   end
 
+  def self.save_iamge(image, name)
+    logger.debug "Saing #{@wrap_export_path}#{name}"
 
+    image.write("#{@wrap_export_path}#{name}")
+
+    @send_image_array.push(name)
+
+  end
+
+  def self.mask_test
+
+
+=begin
+    mask =  Image.read("#{@dropbox_path}maskImageW.png").first
+    base =  Image.read("#{@dropbox_path}baseImage.jpg").first
+    base.matte = true
+
+    result = base.composite!(mask, Magick::CenterGravity, Magick::OutCompositeOp)
+
+    #base = base.composite!(mask, 0, 0, Magick::CopyOpacityCompositeOp)
+
+    #MinusCompositeOp
+
+=end
+
+
+    mask =  Image.read("#{@layout_asset_path}GalaxySIVBackOverlayMask.png").first
+    background =  Image.read("#{@dropbox_path}art.jpg").first
+    mask = mask.resize background.columns, background.rows
+
+    grad = Image.read("#{@dropbox_path}baseImage.jpg").first
+
+
+    background.add_compose_mask(mask)
+    a = background.composite(mask, Magick::CenterGravity, Magick::OverCompositeOp)
+    result = a.composite(grad, Magick::CenterGravity, Magick::OverCompositeOp)
+
+
+
+
+=begin
+   mask =  Image.read("#{@dropbox_path}maskImage.jpg").first
+    background =  Image.read("#{@dropbox_path}baseImage.jpg").first
+
+    background.add_compose_mask(mask)
+    result = background.composite(mask, Magick::CenterGravity, Magick::OverCompositeOp)
+
+=end
+
+
+
+    save_iamge(result, "im.jpg")
+  end
 
 =begin
   def self.create_wraps(current_device, current_image)

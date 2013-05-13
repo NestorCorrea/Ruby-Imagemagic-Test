@@ -4,7 +4,13 @@ class Device < ActiveRecord::Base
   def self.create_device_wraps(device, images)
     wrap_a = Array.new
     images.each do |current_image|
-      wrap_a.push(WrapCreator.create_wraps(device, current_image))
+
+      created_images = WrapCreator.create_wraps(device, current_image)
+
+      created_images.each do |current_image|
+        wrap_a.push(current_image)
+      end
+
     end
     wrap_a
   end

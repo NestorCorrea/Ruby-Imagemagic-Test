@@ -5,9 +5,9 @@
   <%= link_to 'Back', devices_path %>
 </p>
 
-<% @wrap_array.each do |device| %>
+<% @wrap_array.each do |device_image| %>
     <tr>
-      <img src="/assets/<%= device %>" height="700"/>
+      <img src="/assets/<%= device_image %>" height="500"/>
     </tr>
 <% end %>
 
