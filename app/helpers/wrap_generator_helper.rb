@@ -91,16 +91,6 @@ module WrapGeneratorHelper
       generate_skin(current_section, 'place_overlay')
     end
 
-    # Save the skins
-    #@skin_canvas.write("/Users/Nestor/Desktop/export/skin_art.jpg")
-    #@wrap_canvas.write("/Users/Nestor/Desktop/export/skin_wrap.jpg")
-    #@wrap_overlays_canvas.write("/Users/Nestor/Desktop/export/skin_wrap_overlay.png")
-    #
-    #wrap_overlay = @wrap_crop.elemets['wrapOverlay']
-    #wrap_final_overlay = @wrap_crop.elemets['wrapOverlay'].elements['fileName'].text
-    #overlay_image =  Image.read("#{wrap_final_overlay}").first
-    #@wrap_final = @wrap_final.composite(overlay_image, section_item.elements['x'].text.to_i, section_item.elements['y'].text.to_i, Magick::OverCompositeOp)
-
     # Place overlays on top of the wrap
     @wrap_overlays.elements.each do |overlay_element|
       # Only add images

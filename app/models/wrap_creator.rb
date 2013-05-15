@@ -3,6 +3,9 @@ class WrapCreator < ActiveRecord::Base
   require 'json'
 
 
+  # ======================================
+  # Instance Variables
+  # ======================================
   # Store the device and artwork image
   @device
   @artwork
@@ -28,38 +31,37 @@ class WrapCreator < ActiveRecord::Base
 
   @send_image_array
 
-  def self.create_wraps(current_device, current_image)
 
 
+  # ======================================
+  # Initilizer
+  # ======================================
+  def self.init_wrap(current_device, current_image)
     @send_image_array = Array.new
-    # Store the device and artwork image
     @device = current_device
     @artwork = current_image
-
     @side_images = Hash.new
 
     # Load XML
     @source_image =  Image.read("#{@dropbox_path}wrap_generator/source_images/#{@artwork.artwork_file_name}").first
 
-
-
-
-    mask_test
-
-
     # Load artwork file
     file = File.new( "#{@spree_gelaskins_path}public/skinCreator/config/devices/#{@device.dev_id}.xml")
     doc = REXML::Document.new file
     file.close
-
-    # Store the root of the xml
     root_xml = doc.root
-    sections = root_xml.elements['sections']
 
-    skinGen = root_xml.elements['skinGenerator']
+    @sections = root_xml.elements['sections']
+    @skinGen = root_xml.elements['skinGenerator']
 
+    mask_test
+
+    create_wrap
+  end
+
+  def self.create_wrap
     # Loop through the generator sections to store them
-    skinGen.elements.each do |skin_element|
+    @skinGen.elements.each do |skin_element|
       logger.debug "Trace = #{skin_element}"
       if(skin_element.attributes['name'] == "skinart")
         #  logger.debug  "skin art = #{skin_element}"
@@ -70,28 +72,27 @@ class WrapCreator < ActiveRecord::Base
     end
 
     # Set the canvas to write the skin
-    @skin_canvas =          Image::new(skinGen.attributes['width'].to_i, skinGen.attributes['height'].to_i)
-    @wrap_canvas =          Image::new(skinGen.attributes['width'].to_i, skinGen.attributes['height'].to_i)
-    @wrap_overlays_canvas = Image::new(skinGen.attributes['width'].to_i, skinGen.attributes['height'].to_i)
-    @wrap_final =           Image::new(skinGen.attributes['width'].to_i, skinGen.attributes['height'].to_i)
+    @skin_canvas =          Image::new(@skinGen.attributes['width'].to_i, @skinGen.attributes['height'].to_i)
+    @wrap_canvas =          Image::new(@skinGen.attributes['width'].to_i, @skinGen.attributes['height'].to_i)
+    @wrap_final =           Image::new(@skinGen.attributes['width'].to_i, @skinGen.attributes['height'].to_i)
 
     # Go through all the sections and generate the skin
     logger.debug("------ START ----------")
 
     # Create the images on the skin
-    sections.elements.each do |current_section|
+    @sections.elements.each do |current_section|
       create_skin(current_section, 'skinart')
 
       @skin_canvas.write("#{@dropbox_path}skin.jpg" )
     end
 
     # Create the wraps
-    sections.elements.each do |current_section|
+    @sections.elements.each do |current_section|
       create_skin(current_section, 'skinwrap')
     end
 
     # Place the wrap overlays and cut them out
-    sections.elements.each do |current_section|
+    @sections.elements.each do |current_section|
       create_skin(current_section, 'place_overlay')
     end
 
@@ -112,10 +113,10 @@ class WrapCreator < ActiveRecord::Base
     end
 
     @wrap_final = @wrap_final.crop(
-        @wrap_crop.elements['x'].text.to_f,
-        @wrap_crop.elements['y'].text.to_f,
-        @wrap_crop.elements['width'].text.to_f,
-        @wrap_crop.elements['height'].text.to_f
+            @wrap_crop.elements['x'].text.to_f,
+            @wrap_crop.elements['y'].text.to_f,
+            @wrap_crop.elements['width'].text.to_f,
+            @wrap_crop.elements['height'].text.to_f
     )
 
     save_iamge(@skin_canvas,"#{@device.dev_id}-SkinArt-#{@artwork.artwork_file_name}")
@@ -150,10 +151,10 @@ class WrapCreator < ActiveRecord::Base
         elsif section_item.attributes['name'] == 'skinwrap' && generatorType == 'place_overlay'
           # Cut out the overlay and then place it to the final wrap
           cropped = @wrap_canvas.crop(
-              section_item.elements['x'].text.to_i,
-              section_item.elements['y'].text.to_i,
-              section_item.elements['width'].text.to_i,
-              section_item.elements['height'].text.to_i)
+                  section_item.elements['x'].text.to_i,
+                  section_item.elements['y'].text.to_i,
+                  section_item.elements['width'].text.to_i,
+                  section_item.elements['height'].text.to_i)
 
           # Add an overlay mask if needed
           if @current_section.elements['elements'].elements['overlayMask']
@@ -176,10 +177,10 @@ class WrapCreator < ActiveRecord::Base
           end
 
           @wrap_final = @wrap_final.composite(
-              cropped,
-              section_item.elements['x'].text.to_i,
-              section_item.elements['y'].text.to_i,
-              Magick::OverCompositeOp)
+                  cropped,
+                  section_item.elements['x'].text.to_i,
+                  section_item.elements['y'].text.to_i,
+                  Magick::OverCompositeOp)
         end
       end
     end
@@ -195,10 +196,10 @@ class WrapCreator < ActiveRecord::Base
 
       # Copy part of the image
       copy_image = @skin_canvas.crop(
-          current_cut.elements['copy'].elements['x'].text.to_f,
-          current_cut.elements['copy'].elements['y'].text.to_f,
-          current_cut.elements['copy'].elements['width'].text.to_f,
-          current_cut.elements['copy'].elements['height'].text.to_f)
+              current_cut.elements['copy'].elements['x'].text.to_f,
+              current_cut.elements['copy'].elements['y'].text.to_f,
+              current_cut.elements['copy'].elements['width'].text.to_f,
+              current_cut.elements['copy'].elements['height'].text.to_f)
 
       # Paste the image onto the wrap
       if current_cut.elements['paste'].elements['tl']
@@ -222,10 +223,8 @@ class WrapCreator < ActiveRecord::Base
       copy_image = copy_image.resize(paste_w, paste_h)
 
 
-      @wrap_canvas = @wrap_canvas.composite(copy_image,paste_x ,paste_y ,Magick::OverCompositeOp)
-    end
 
-    if overlay_mask_path
+      if overlay_mask_path
 
 =begin
 
@@ -247,10 +246,17 @@ class WrapCreator < ActiveRecord::Base
       save_iamge(mask,"#{@device.dev_id}-#{@current_section.attributes['name']}-sidewrapMASK-#{@artwork.artwork_file_name}")
       save_iamge(copy_image,"#{@device.dev_id}-#{@current_section.attributes['name']}-sidewrap-#{@artwork.artwork_file_name}")
 =end
-    else
+      else
 
-      #save_iamge(copy_image,"#{@device.dev_id}-#{@current_section.attributes['name']}-sidewrap-#{@artwork.artwork_file_name}")
+        #save_iamge(copy_image,"#{@device.dev_id}-#{@current_section.attributes['name']}-sidewrap-#{@artwork.artwork_file_name}")
+      end
+
+
+      @wrap_canvas = @wrap_canvas.composite(copy_image,paste_x ,paste_y ,Magick::OverCompositeOp)
+
+
     end
+
 
 
 
@@ -281,8 +287,8 @@ class WrapCreator < ActiveRecord::Base
 
     # Size and position the art file on the side
     place_art = @source_image.resize(
-        multiplier * @source_image.columns,
-        multiplier * @source_image.rows)
+            multiplier * @source_image.columns,
+            multiplier * @source_image.rows)
 
     # Get the boundig Box
     image_center_x = place_art.columns * 0.5
@@ -315,10 +321,10 @@ class WrapCreator < ActiveRecord::Base
 
     # Place the sized art onto the canvas
     @skin_canvas =  @skin_canvas.composite(
-        place_art,
-        side_x,
-        side_y  ,
-        Magick::OverCompositeOp)
+            place_art,
+            side_x,
+            side_y  ,
+            Magick::OverCompositeOp)
 
     place_art
   end
@@ -335,6 +341,16 @@ class WrapCreator < ActiveRecord::Base
   def self.mask_test
 
 
+    mask =  Image.read("#{@layout_asset_path}GalaxySIVBackOverlayMask.png").first
+    background =  Image.read("#{@dropbox_path}art.jpg").first
+    mask = mask.resize background.columns, background.rows
+
+    grad = Image.read("#{@dropbox_path}baseImage.jpg").first
+
+    background.add_compose_mask(mask)
+    a = background.composite(mask, Magick::CenterGravity, Magick::OverCompositeOp)
+    result = a.composite(grad, Magick::CenterGravity, Magick::OverCompositeOp)
+
 =begin
     mask =  Image.read("#{@dropbox_path}maskImageW.png").first
     base =  Image.read("#{@dropbox_path}baseImage.jpg").first
@@ -348,21 +364,6 @@ class WrapCreator < ActiveRecord::Base
 
 =end
 
-
-    mask =  Image.read("#{@layout_asset_path}GalaxySIVBackOverlayMask.png").first
-    background =  Image.read("#{@dropbox_path}art.jpg").first
-    mask = mask.resize background.columns, background.rows
-
-    grad = Image.read("#{@dropbox_path}baseImage.jpg").first
-
-
-    background.add_compose_mask(mask)
-    a = background.composite(mask, Magick::CenterGravity, Magick::OverCompositeOp)
-    result = a.composite(grad, Magick::CenterGravity, Magick::OverCompositeOp)
-
-
-
-
 =begin
    mask =  Image.read("#{@dropbox_path}maskImage.jpg").first
     background =  Image.read("#{@dropbox_path}baseImage.jpg").first
@@ -371,10 +372,7 @@ class WrapCreator < ActiveRecord::Base
     result = background.composite(mask, Magick::CenterGravity, Magick::OverCompositeOp)
 
 =end
-
-
-
-    save_iamge(result, "im.jpg")
+    save_iamge(result, "test_mask.jpg")
   end
 
 =begin

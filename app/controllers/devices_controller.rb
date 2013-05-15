@@ -22,13 +22,6 @@ class DevicesController < ApplicationController
 
     @wrap_array = Device.create_device_wraps(@device, @artworks)
 
-=begin
-    @artworks.each do |image|
-      @wrap_array.push(generate_wrap(@device, image))
-    end
-=end
-
-
     respond_to do |format|
       format.html # show.html.erb
       format.json { render json: @device }

@@ -7,7 +7,11 @@
 
 <% @wrap_array.each do |device_image| %>
     <tr>
-      <img src="/assets/<%= device_image %>" height="500"/>
+      <img src="/assets/<%= device_image %>" height="300"/>
     </tr>
+    <p>
+
+			<%= device_image %>
+    </p>
 <% end %>
 
