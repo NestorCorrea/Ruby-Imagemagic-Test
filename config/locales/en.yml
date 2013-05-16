@@ -4,7 +4,6 @@
 
 
 en:
-  hello: "Hello world"
-
-  dropbox_path: "/Users/Nestor/Dropbox/"
-  spree_gelaskins_path: "/Users/Nestor/Projects/Repositories/GelaSkins/spree_gelaskins/"
+  dropbox_path = "/Users/NestorCorrea/Dropbox/"
+  spree_gelaskins_path = "/Users/NestorCorrea/Projects/Repositories/GelaSkins/spree_gelaskins/GelaSkins/spree_gelaskins/"
+  wrap_export_path = "/Users/NestorCorrea/Projects/Repositories/Nestor/Ruby-Imagemagic-Test/app/assets/images/exports/"

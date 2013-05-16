@@ -21,20 +21,22 @@ class WrapCreator < ActiveRecord::Base
   @wrap_overlays
   @current_section
 
-  # Initial Variables
-  @dropbox_path = "/Users/Nestor/Dropbox/"
-  @spree_gelaskins_path = "/Users/Nestor/Projects/Repositories/GelaSkins/spree_gelaskins/"
-  @layout_asset_path = "/Users/Nestor/Projects/Repositories/GelaSkins/spree_gelaskins/public/skinCreator/assets/layoutManagerAssets/layoutAssets/"
-  @preview_asset_path = "/Users/Nestor/Projects/Repositories/GelaSkins/spree_gelaskins/public/skinCreator/assets/layoutManagerAssets/previewAssets/"
-  @wrap_export_path = "/Users/Nestor/Projects/Repositories/Nestor/Ruby-Imagemagic-Test/app/assets/images/"
-
 
   # ======================================
   # Initilizer
   # ======================================
-  def self.init_wrap(current_device, current_image)
+  def self.init_wrap(current_device, current_image, repositoty_path, dropbox_path, wrap_export_path)
+
+    @dropbox_path = dropbox_path
+    @spree_gelaskins_path = repositoty_path
+    @layout_asset_path = "#{repositoty_path}public/skinCreator/assets/layoutManagerAssets/layoutAssets/"
+    @preview_asset_path = "#{repositoty_path}public/skinCreator/assets/layoutManagerAssets/previewAssets/"
+
+    @wrap_export_path = wrap_export_path
+
     @send_image_array = Array.new
     @device = current_device
+    logger.debug current_image
     @artwork = current_image
     @side_images = Hash.new
 

@@ -17,10 +17,12 @@ class DevicesController < ApplicationController
   def show
     @device = Device.find(params[:id])
     @wrap_array = []
-    @artworks = [Artwork.find_by_id(9)  ]
+    @artworks = [Artwork.first]
     #@artworks = Artwork.all
 
-    @wrap_array = Device.create_device_wraps(@device, @artworks)
+    logger.debug "----------- Db Path = #{@dropbox_path}"
+
+    @wrap_array = Device.create_device_wraps(@device, @artworks, @spree_gelaskins_path, @dropbox_path, @wrap_export_path)
 
     respond_to do |format|
       format.html # show.html.erb

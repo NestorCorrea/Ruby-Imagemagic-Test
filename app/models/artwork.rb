@@ -1,3 +1,3 @@
 class Artwork < ActiveRecord::Base
-  attr_accessible :artwork, :artwork_file_name, :artwork_name
+  attr_accessible :artwork, :artwork_file_name, :artwork_name, :artist_name
 end
