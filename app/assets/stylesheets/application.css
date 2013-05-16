@@ -11,3 +11,7 @@
  *= require_self
  *= require_tree .
  */
+
+.main-div{
+  background-color: #999999
+}

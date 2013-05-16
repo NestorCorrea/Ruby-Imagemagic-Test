@@ -1,20 +1,22 @@
-<p id="notice"><%= notice %></p>
+<div class="main-div">
+	<p id="notice"><%= notice %></p>
 
-<p><%= @debug %></p>
-<p>
-	<%= link_to 'Back', devices_path %>
-</p>
-
-<% @wrap_array.each do |device_image| %>
-	<tr>
-		<img src="/assets/<%= device_image %>" height="400"/>
-	</tr>
+	<p><%= @debug %></p>
 	<p>
-		<%= device_image %>
+		<%= link_to 'Back to devices', devices_path %>
 	</p>
 
-	<p>
-		--------------------------------------------------------------------------
-	</p>
-<% end %>
+	<% @wrap_array.each do |device_image| %>
+		<tr>
+			<img src="/assets/<%= device_image %>" height="400"/>
+		</tr>
+		<p>
+			<%= device_image %>
+		</p>
+
+		<p>
+			--------------------------------------------------------------------------
+		</p>
+	<% end %>
+</div>
 

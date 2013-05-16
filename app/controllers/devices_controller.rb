@@ -17,7 +17,7 @@ class DevicesController < ApplicationController
   def show
     @device = Device.find(params[:id])
     @wrap_array = []
-    @artworks = [Artwork.first  ]
+    @artworks = [Artwork.find_by_id(9)  ]
     #@artworks = Artwork.all
 
     @wrap_array = Device.create_device_wraps(@device, @artworks)
