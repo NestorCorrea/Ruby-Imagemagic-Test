@@ -34,8 +34,10 @@ ActiveRecord::Schema.define(:version => 20130516135632) do
   create_table "generators", :force => true do |t|
     t.string   "dev_id"
     t.string   "dev_name"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.string   "front_image"
+    t.string   "back_image"
+    t.datetime "created_at",  :null => false
+    t.datetime "updated_at",  :null => false
   end
 
   create_table "wrap_creators", :force => true do |t|

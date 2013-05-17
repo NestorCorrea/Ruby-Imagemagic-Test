@@ -55,6 +55,7 @@ class WrapCreator < ActiveRecord::Base
     @skinGen.elements.each do |skin_element|
       logger.debug "Trace = #{skin_element}"
       if(skin_element.attributes['name'] == "skinart")
+        @skin_art_overlays = skin_element.elements['overlayAssets']
         #  logger.debug  "skin art = #{skin_element}"
       elsif(skin_element.attributes['name'] == "skinwrap")
         @wrap_crop = skin_element.elements['crop'].elements['cut']
@@ -70,6 +71,8 @@ class WrapCreator < ActiveRecord::Base
     create_wrap_temp
 
     create_wrap_final
+
+    create_wallpaper
 
     @send_image_array
   end
@@ -93,7 +96,21 @@ class WrapCreator < ActiveRecord::Base
         end
       end
     end
-    save_image(@skin_art_canvas, "skin_art.jpg")
+
+
+    # Set all the overlays
+    final_skin_art = @skin_art_canvas
+    @skin_art_overlays.elements.each do |overlay_element|
+      # Only add images
+      if overlay_element.attributes['type'] == "image"
+        image_path = "#{@preview_asset_path}#{overlay_element.elements['fileName'].text}"
+        overlay_image =  Image.read("#{image_path}").first
+        overlay_image = overlay_image.resize(overlay_element.elements['width'].text.to_i, overlay_element.elements['height'].text.to_i)
+
+        final_skin_art = final_skin_art.composite(overlay_image, overlay_element.elements['x'].text.to_f, overlay_element.elements['y'].text.to_f, Magick::OverCompositeOp)
+      end
+    end
+    save_image(final_skin_art, "skin_art.jpg")
   end
 
   def self.add_to_skin_art(section_item)
@@ -209,7 +226,7 @@ class WrapCreator < ActiveRecord::Base
               end
 
 
-              save_image(copy_image, "Wrap-Paste-#{current_section.attributes['name']}.jpg")
+              #save_image(copy_image, "Wrap-Paste-#{current_section.attributes['name']}.jpg")
               @wrap_final = @wrap_final.composite(copy_image,paste_x ,paste_y ,Magick::OverCompositeOp)
             end
           end
@@ -217,7 +234,7 @@ class WrapCreator < ActiveRecord::Base
       end
     end
 
-    save_image(@wrap_final, "wrap_temp.jpg")
+    #save_image(@wrap_final, "wrap_temp.jpg")
   end
 
 
@@ -237,7 +254,7 @@ class WrapCreator < ActiveRecord::Base
       end
     end
 
-    # Crop the wrap
+# Crop the wrap
     @wrap_final = @wrap_final.crop(
             @wrap_crop.elements['x'].text.to_f,
             @wrap_crop.elements['y'].text.to_f,
@@ -247,6 +264,58 @@ class WrapCreator < ActiveRecord::Base
     save_image(@wrap_final,"wrap_final.jpg")
   end
 
+
+
+  # ======================================
+  # 4 Create wallpaper
+  # ======================================
+  def self.create_wallpaper
+    @sections.elements.each do |current_section|
+      if current_section.attributes['type'] == 'wallpaper'
+
+        if current_section.elements['embed']
+          wallpaper_image = @side_images[current_section.elements['embed'].elements['sectionName'].text]
+
+          save_image(wallpaper_image, "wallpaper-Source.jpg")
+
+          current_section.elements['sectionSkinConfig'].elements.each do |section_item|
+            if section_item.attributes["name"] == 'wallpaper'
+
+              logger.debug "source image #{wallpaper_image.columns} x #{wallpaper_image.rows} "
+              logger.debug "copy #{section_item.elements['x'].text.to_i} x #{section_item.elements['y'].text.to_i} | W = #{section_item.elements['width'].text.to_i} | H = #{section_item.elements['height'].text.to_i}"
+
+
+              temp_wallpaper = Image::new(wallpaper_image.columns, wallpaper_image.rows)
+              temp_wallpaper =  temp_wallpaper.composite(
+                      wallpaper_image,
+                      0,
+                      0,
+                      Magick::OverCompositeOp)
+
+
+              temp_wallpaper = temp_wallpaper.crop(
+                      section_item.elements['x'].text.to_i,
+                      section_item.elements['y'].text.to_i,
+                      section_item.elements['width'].text.to_i,
+                      section_item.elements['height'].text.to_i)
+
+              save_image(temp_wallpaper, "wallpaper_embed.jpg")
+            end
+          end
+
+        end
+
+=begin
+        current_section.elements['sectionSkinConfig'].elements.each do |section_item|
+          if section_item.attributes["name"] == 'skinart'
+            @side_images[current_section.attributes['name']] = add_to_skin_art(section_item)
+          end
+        end
+=end
+      end
+    end
+    #save_image(@skin_art_canvas, "skin_art.jpg")
+  end
 
 
   # ======================================
