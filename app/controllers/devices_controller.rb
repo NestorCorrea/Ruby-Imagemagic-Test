@@ -22,7 +22,7 @@ class DevicesController < ApplicationController
 
     logger.debug "----------- Db Path = #{@dropbox_path}"
 
-    @wrap_array = Device.create_device_wraps(@device, @artworks, @spree_gelaskins_path, @dropbox_path, @wrap_export_path)
+    @wrap_array = Device.create_device_wraps(@device, @artworks, @customizer_path, @dropbox_path, @wrap_export_path)
 
     respond_to do |format|
       format.html # show.html.erb

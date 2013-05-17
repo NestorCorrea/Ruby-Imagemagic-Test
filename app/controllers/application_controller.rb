@@ -11,9 +11,8 @@ class ApplicationController < ActionController::Base
 =end
 
     # Laptop
-    @dropbox_path =         "/Users/Nestor/Dropbox/"
-    @spree_gelaskins_path = "/Users/Nestor/Projects/Repositories/GelaSkins/spree_gelaskins/"
-    @wrap_export_path =     "/Users/Nestor/Projects/Repositories/Nestor/Ruby-Imagemagic-Test/app/assets/images/image_exports/"
-
+    @dropbox_path =         "/Users/NestorCorrea/Dropbox/"
+    @customizer_path =      "/Users/NestorCorrea/wwwroot/skinCreator/"
+    @wrap_export_path =     "/Users/NestorCorrea/Projects/GelaSkins/Repositories/Git/Nestor/Ruby-Imagemagic-Test/app/assets/images/image_exports/"
   end
 end

@@ -29,8 +29,8 @@ class WrapCreator < ActiveRecord::Base
 
     @dropbox_path = dropbox_path
     @spree_gelaskins_path = repositoty_path
-    @layout_asset_path = "#{repositoty_path}public/skinCreator/assets/layoutManagerAssets/layoutAssets/"
-    @preview_asset_path = "#{repositoty_path}public/skinCreator/assets/layoutManagerAssets/previewAssets/"
+    @layout_asset_path = "#{repositoty_path}assets/layoutManagerAssets/layoutAssets/"
+    @preview_asset_path = "#{repositoty_path}assets/layoutManagerAssets/previewAssets/"
 
     @wrap_export_path = wrap_export_path
 
@@ -44,7 +44,7 @@ class WrapCreator < ActiveRecord::Base
     @source_image =  Image.read("#{@dropbox_path}wrap_generator/source_images/#{@artwork.artwork_file_name}").first
 
     # Load artwork file
-    file = File.new( "#{@spree_gelaskins_path}public/skinCreator/config/devices/#{@device.dev_id}.xml")
+    file = File.new( "#{@spree_gelaskins_path}config/devices/#{@device.dev_id}.xml")
     doc_xml = REXML::Document.new file
     file.close
 
@@ -243,6 +243,9 @@ class WrapCreator < ActiveRecord::Base
   # ======================================
   def self.create_wrap_final
     # Set all the overlays
+
+    save_image(@wrap_final, "wrap_no_Overlay.jpg")
+
     @wrap_overlays.elements.each do |overlay_element|
       # Only add images
       if overlay_element.attributes['type'] == "image"
@@ -284,14 +287,8 @@ class WrapCreator < ActiveRecord::Base
               logger.debug "source image #{wallpaper_image.columns} x #{wallpaper_image.rows} "
               logger.debug "copy #{section_item.elements['x'].text.to_i} x #{section_item.elements['y'].text.to_i} | W = #{section_item.elements['width'].text.to_i} | H = #{section_item.elements['height'].text.to_i}"
 
-
               temp_wallpaper = Image::new(wallpaper_image.columns, wallpaper_image.rows)
-              temp_wallpaper =  temp_wallpaper.composite(
-                      wallpaper_image,
-                      0,
-                      0,
-                      Magick::OverCompositeOp)
-
+              temp_wallpaper =  temp_wallpaper.composite(wallpaper_image, 0, 0, Magick::OverCompositeOp)
 
               temp_wallpaper = temp_wallpaper.crop(
                       section_item.elements['x'].text.to_i,
