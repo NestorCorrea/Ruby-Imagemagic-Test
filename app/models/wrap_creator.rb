@@ -68,6 +68,10 @@ class WrapCreator < ActiveRecord::Base
 
     create_skin_art
 
+    add_message_to_skin_art
+
+    create_final_skin_art
+
     create_wrap_temp
 
     create_wrap_final
@@ -96,8 +100,78 @@ class WrapCreator < ActiveRecord::Base
         end
       end
     end
+  end
+
+  def self.add_message_to_skin_art
+    message_section = get_section_by_name('message')
+    if message_section != nil
+      # Determain the offset of the text
+      wallpaper_section = get_section_by_name("wallpaper").elements['embed'].elements
+      front_section = get_section_preview_by_type("front", "skinart").elements
+      offset_x = wallpaper_section['x'].text.to_f + front_section['x'].text.to_f
+      offset_y = wallpaper_section['y'].text.to_f + front_section['y'].text.to_f
+
+      # Add the overlay
+      overlay_image =  Image.read("#{@layout_asset_path}#{message_section.elements['elements'].elements['overlay'].text}").first
+      @skin_art_canvas = @skin_art_canvas.composite(overlay_image,offset_x, offset_y, Magick::OverCompositeOp)
+
+      message_section.elements['elements'].elements['text'].elements.each do |text_section|
 
 
+        if text_section.attributes['name'] == 'titleMessage'
+          text = 'The Image Title'
+        elsif text_section.attributes['name'] == 'artistMessage'
+          text = 'Nestor Correa'
+        elsif text_section.attributes['name'] == 'locationMessage'
+          text = 'Maple, Canada'
+        end
+
+
+
+        text_message = Draw.new
+        text_message.annotate(@skin_art_canvas,
+                      text_section.elements['width'].text.to_f,
+                      text_section.elements['height'].text.to_f,
+                      text_section.elements['x'].text.to_f + offset_x,
+                      text_section.elements['y'].text.to_f + offset_y,
+                      text) {
+          self.fill = 'black'
+          self.pointsize = text_section.elements['fontSize'].text.to_f
+
+          self.font_family = 'Helvetica'
+        }
+      end
+
+    end
+=begin
+
+ @skin_art_canvas = @skin_art_canvas.composite(
+              image_path,
+              wallpaper_section['x'].text.to_f + front_section['x'].text.to_f,
+              wallpaper_section['y'].text.to_f + front_section['y'].text.to_f,
+              Magick::OverCompositeOp)
+
+
+
+      message_section.elements['elements'].elements['text'].elements.each do |text_section|
+
+      end
+=end
+
+
+
+=begin
+
+        text = Draw.new
+        text.annotate(final_skin_art, 0,0,0,40, 'Nestor Correa') {
+          self.fill = 'black'
+          self.pointsize = 32
+        }
+=end
+  end
+
+
+  def self.create_final_skin_art
     # Set all the overlays
     final_skin_art = @skin_art_canvas
     @skin_art_overlays.elements.each do |overlay_element|
@@ -110,8 +184,11 @@ class WrapCreator < ActiveRecord::Base
         final_skin_art = final_skin_art.composite(overlay_image, overlay_element.elements['x'].text.to_f, overlay_element.elements['y'].text.to_f, Magick::OverCompositeOp)
       end
     end
+
+
     save_image(final_skin_art, "skin_art.jpg")
   end
+
 
   def self.add_to_skin_art(section_item)
     # Set the area parameters
@@ -168,9 +245,10 @@ class WrapCreator < ActiveRecord::Base
   end
 
 
-  # ======================================
-  # 2 Wrap Temp
-  # ======================================
+
+# ======================================
+# 2 Wrap Temp
+# ======================================
   def self.create_wrap_temp
     @wrap_final =  Image::new(@skinGen.attributes['width'].to_i, @skinGen.attributes['height'].to_i)
 
@@ -238,9 +316,9 @@ class WrapCreator < ActiveRecord::Base
   end
 
 
-  # ======================================
-  # 3 Wrap Final
-  # ======================================
+# ======================================
+# 3 Wrap Final
+# ======================================
   def self.create_wrap_final
     # Set all the overlays
 
@@ -269,9 +347,9 @@ class WrapCreator < ActiveRecord::Base
 
 
 
-  # ======================================
-  # 4 Create wallpaper
-  # ======================================
+# ======================================
+# 4 Create wallpaper
+# ======================================
   def self.create_wallpaper
     @sections.elements.each do |current_section|
       if current_section.attributes['type'] == 'wallpaper'
@@ -280,66 +358,62 @@ class WrapCreator < ActiveRecord::Base
           wallpaper_image = @side_images[current_section.elements['embed'].elements['sectionName'].text]
 
           save_image(wallpaper_image, "wallpaper-Source.jpg")
+          if current_section.elements['sectionSkinConfig']
+            current_section.elements['sectionSkinConfig'].elements.each do |section_item|
+              if section_item.attributes["name"] == 'wallpaper'
 
-          current_section.elements['sectionSkinConfig'].elements.each do |section_item|
-            if section_item.attributes["name"] == 'wallpaper'
+                logger.debug "source image #{wallpaper_image.columns} x #{wallpaper_image.rows} "
+                logger.debug "copy #{section_item.elements['x'].text.to_i} x #{section_item.elements['y'].text.to_i} | W = #{section_item.elements['width'].text.to_i} | H = #{section_item.elements['height'].text.to_i}"
 
-              logger.debug "source image #{wallpaper_image.columns} x #{wallpaper_image.rows} "
-              logger.debug "copy #{section_item.elements['x'].text.to_i} x #{section_item.elements['y'].text.to_i} | W = #{section_item.elements['width'].text.to_i} | H = #{section_item.elements['height'].text.to_i}"
+                temp_wallpaper = Image::new(wallpaper_image.columns, wallpaper_image.rows)
+                temp_wallpaper =  temp_wallpaper.composite(wallpaper_image, 0, 0, Magick::OverCompositeOp)
 
-              temp_wallpaper = Image::new(wallpaper_image.columns, wallpaper_image.rows)
-              temp_wallpaper =  temp_wallpaper.composite(wallpaper_image, 0, 0, Magick::OverCompositeOp)
+                temp_wallpaper = temp_wallpaper.crop(
+                        section_item.elements['x'].text.to_i,
+                        section_item.elements['y'].text.to_i,
+                        section_item.elements['width'].text.to_i,
+                        section_item.elements['height'].text.to_i)
 
-              temp_wallpaper = temp_wallpaper.crop(
-                      section_item.elements['x'].text.to_i,
-                      section_item.elements['y'].text.to_i,
-                      section_item.elements['width'].text.to_i,
-                      section_item.elements['height'].text.to_i)
-
-              save_image(temp_wallpaper, "wallpaper_embed.jpg")
+                save_image(temp_wallpaper, "wallpaper_embed.jpg")
+              end
             end
           end
 
         end
-
-=begin
-        current_section.elements['sectionSkinConfig'].elements.each do |section_item|
-          if section_item.attributes["name"] == 'skinart'
-            @side_images[current_section.attributes['name']] = add_to_skin_art(section_item)
-          end
-        end
-=end
       end
+
     end
+  end
+
+
     #save_image(@skin_art_canvas, "skin_art.jpg")
-  end
 
 
-  # ======================================
-  # Save image
-  # ======================================
-  def self.save_image(image, name)
-    #logger.debug "Saing #{@wrap_export_path}#{name}"
+    # ======================================
+    # Save image
+    # ======================================
+    def self.save_image(image, name)
+      #logger.debug "Saing #{@wrap_export_path}#{name}"
 
-    image.write("#{@wrap_export_path}#{name}")
+      image.write("#{@wrap_export_path}#{name}")
 
-    @send_image_array.push(name)
+      @send_image_array.push(name)
 
-  end
+    end
 
 
-  # ======================================
-  # Tests
-  # ======================================
+# ======================================
+# Tests
+# ======================================
 
-  def self.mask_test
-    canvas = Magick::Image.new(1024,768)
-    canvas.opacity = Magick::MaxRGB
-    image = Magick::ImageList.new("#{@dropbox_path}maskImageb.png").first
-    image.background_color = "none"
-    #image.opacity = Magick::MaxRGB/2
-    canvas.composite!(image, 50, 50, Magick::OverCompositeOp)
-    save_image(canvas,'composite.png' )
+    def self.mask_test
+      canvas = Magick::Image.new(1024,768)
+      canvas.opacity = Magick::MaxRGB
+      image = Magick::ImageList.new("#{@dropbox_path}maskImageb.png").first
+      image.background_color = "none"
+      #image.opacity = Magick::MaxRGB/2
+      canvas.composite!(image, 50, 50, Magick::OverCompositeOp)
+      save_image(canvas,'composite.png' )
 
 =begin
     mask =  Image.read("#{@layout_asset_path}GalaxySIVBackOverlayMask.png").first
@@ -354,5 +428,28 @@ class WrapCreator < ActiveRecord::Base
     save_image(result, "test_mask.jpg")
 
 =end
+    end
+
+
+
+  def self.get_section_preview_by_type(section_name, type)
+    section = get_section_by_name(section_name)
+    if section.elements['sectionSkinConfig'].elements.each do |section_item|
+      if section_item.attributes["name"] == type
+        return section_item
+      end
+    end
+    end
+  end
+
+
+  def self.get_section_by_name(name)
+    return_section = nil
+    @sections.elements.each do |current_section|
+      if current_section.attributes['name'] == name
+        return_section = current_section
+      end
+    end
+    return return_section
   end
 end

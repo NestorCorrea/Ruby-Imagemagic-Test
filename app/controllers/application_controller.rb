@@ -4,15 +4,20 @@ class ApplicationController < ActionController::Base
 
   def set_vars
 =begin
-    # Desktop
+    # Laptop
+    @dropbox_path =         "/Users/Nestor/Dropbox/"
+    @customizer_path =      "/Users/Nestor/Projects/Repositories/GelaSkins/spree_gelaskins/public/skinCreator/"
+    @wrap_export_path =     "/Users/Nestor/Projects/Repositories/Nestor/Ruby-Imagemagic-Test/app/assets/images/image_exports/"
+
+    #Desktop
     @dropbox_path =         "/Users/NestorCorrea/Dropbox/"
-    @spree_gelaskins_path = "/Users/NestorCorrea/Projects/GelaSkins/Repositories/Git/GelaSkins/spree_gelaskins/"
+    @customizer_path =      "/Users/NestorCorrea/wwwroot/skinCreator/"
     @wrap_export_path =     "/Users/NestorCorrea/Projects/GelaSkins/Repositories/Git/Nestor/Ruby-Imagemagic-Test/app/assets/images/image_exports/"
 =end
 
     # Laptop
-    @dropbox_path =         "/Users/NestorCorrea/Dropbox/"
-    @customizer_path =      "/Users/NestorCorrea/wwwroot/skinCreator/"
-    @wrap_export_path =     "/Users/NestorCorrea/Projects/GelaSkins/Repositories/Git/Nestor/Ruby-Imagemagic-Test/app/assets/images/image_exports/"
+    @dropbox_path =         "/Users/Nestor/Dropbox/"
+    @customizer_path =      "/Users/Nestor/Dropbox/wwwroot/skinCreator/"
+    @wrap_export_path =     "/Users/Nestor/Projects/Repositories/Nestor/Ruby-Imagemagic-Test/app/assets/images/image_exports/"
   end
 end
