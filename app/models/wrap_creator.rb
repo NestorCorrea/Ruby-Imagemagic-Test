@@ -119,26 +119,44 @@ class WrapCreator < ActiveRecord::Base
 
 
         if text_section.attributes['name'] == 'titleMessage'
-          text = 'The Image Title'
+          text = 'Title'
         elsif text_section.attributes['name'] == 'artistMessage'
-          text = 'Nestor Correa'
+          text = 'Artist'
         elsif text_section.attributes['name'] == 'locationMessage'
-          text = 'Maple, Canada'
+          text = 'City'
         end
 
+        gernerator_adjust_x = 0
+        gernerator_adjust_y = 0
+
+        if(text_section.elements['generatorAdjustX'])
+          gernerator_adjust_x = text_section.elements['generatorAdjustX'].text.to_f iftext_section.elements['generatorAdjustX']
+        end
+
+        if(text_section.elements['generatorAdjustY'])
+          gernerator_adjust_y = text_section.elements['generatorAdjustY'].text.to_f
+        end
 
 
         text_message = Draw.new
         text_message.annotate(@skin_art_canvas,
-                      text_section.elements['width'].text.to_f,
-                      text_section.elements['height'].text.to_f,
-                      text_section.elements['x'].text.to_f + offset_x,
-                      text_section.elements['y'].text.to_f + offset_y,
-                      text) {
+                              text_section.elements['width'].text.to_f,
+                              text_section.elements['height'].text.to_f,
+                              text_section.elements['x'].text.to_f + offset_x + gernerator_adjust_x,
+                              text_section.elements['y'].text.to_f + offset_y + gernerator_adjust_y,
+                              text) {
           self.fill = 'black'
           self.pointsize = text_section.elements['fontSize'].text.to_f
 
-          self.font_family = 'Helvetica'
+          self.fill = text_section.elements['color'].text
+          self.font_family = 'helvetica'
+
+          if(text_section.elements['fontWeight'])
+
+            if(text_section.elements['fontWeight'].text == 'bold')
+              self.font_weight = Magick::BoldWeight
+            end
+          end
         }
       end
 
