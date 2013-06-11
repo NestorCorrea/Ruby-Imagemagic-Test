@@ -66,6 +66,9 @@ class WrapCreator < ActiveRecord::Base
     # Set the canvas to write the skin
     #mask_test
 
+    create_image_for_site
+=begin
+
     create_skin_art
 
     add_message_to_skin_art
@@ -77,8 +80,46 @@ class WrapCreator < ActiveRecord::Base
     create_wrap_final
 
     create_wallpaper
+=end
 
     @send_image_array
+  end
+
+  def self.create_image_for_site
+
+
+    artist_name = 'Nestor Correa'
+    artwork__name = 'Amazing'
+    source_image = 'source.jpg'
+    export = 'export.jpg'
+
+    system("convert -size 575x300  xc:none -fill white -stroke none \
+            -draw 'roundrectangle 10,10 570pdate,295 50,50' \
+            -fill '#D9D9D9' -pointsize 48 -gravity center -annotate +0-30 #{artwork__name} \
+            -fill '#D9D9D9' -pointsize 36 -gravity center -weight bold  -annotate +0+30 '© #{artist_name}' \
+            text-overlay.png")
+
+    system("composite -gravity center -strip -quality 66  text.png #{source_image} #{export}")
+
+
+
+=begin
+    system("convert watermark.png -fill ‘#0008′ -draw ‘rectangle 5,128,114,145′ -font /usr/share/fonts/bitstream-vera/Vera.ttf  -fill white   -annotate +10+141 ’12345′ out.jpg")
+=end
+
+    text_canvas = Image::new(200, 200)
+    text_message = Draw.new
+    text_message.annotate(text_canvas,
+                          100,
+                          100,
+                          25,
+                          25,
+                          'THis is ates') {
+      self.pointsize = 24
+      self.fill = '#D6D6D6'
+      self.font_family = 'helvetica'}
+      save_image(text_canvas, "text.jpg")
+
   end
 
 
