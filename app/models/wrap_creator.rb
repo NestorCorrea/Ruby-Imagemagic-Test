@@ -138,7 +138,7 @@ class WrapCreator < ActiveRecord::Base
           self.fill = 'black'
           self.pointsize = text_section.elements['fontSize'].text.to_f
 
-          self.font_family = 'Helvetica'
+          #self.font_family = 'Helvetica'
         }
       end
 
